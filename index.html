@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Per Sara 💌</title>
+<style>
+:root{--pink:#ff4d8d;--deep:#c2185b;--cream:#fff5f0;--ink:#4a1f33}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;overflow-x:hidden;
+  font-family:ui-rounded,"Nunito","Segoe UI",system-ui,sans-serif;color:var(--ink);
+  background:linear-gradient(135deg,#ffd6e7,#fff0e6 55%,#ffc9dc);}
+.heart{position:fixed;bottom:-40px;font-size:24px;opacity:.6;animation:up linear forwards;pointer-events:none}
+@keyframes up{to{transform:translateY(-110vh) rotate(40deg);opacity:0}}
+.card{position:relative;width:100%;max-width:440px;background:var(--cream);border-radius:28px;padding:28px 24px;
+  box-shadow:0 20px 50px #c2185b33;text-align:center;min-height:380px}
+h1{font-size:1.6rem;margin:.2em 0 .4em;color:var(--deep)}
+p{margin:.3em 0 1em}
+.emoji{font-size:4rem;display:block;animation:beat 1.2s infinite}
+@keyframes beat{50%{transform:scale(1.15)}}
+.step{display:none;animation:in .4s}.step.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(12px)}}
+button,input{font:inherit}
+button{border:0;border-radius:999px;padding:12px 26px;cursor:pointer;background:var(--pink);color:#fff;font-weight:700;
+  box-shadow:0 6px 16px #ff4d8d55;transition:transform .15s}
+button:hover{transform:scale(1.05)}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#no{background:#999;box-shadow:none}
+.row{display:flex;gap:12px;justify-content:center;align-items:center;min-height:90px;flex-wrap:wrap}
+input[type=date],input[type=time]{width:100%;padding:12px;margin:6px 0;border:2px solid #ffb3cd;border-radius:14px;background:#fff;color:var(--ink)}
+.opt{display:block;width:100%;margin:8px 0;text-align:left;background:#fff;color:var(--ink);border:2px solid #ffb3cd;box-shadow:none;border-radius:18px}
+.opt small{display:block;font-weight:400;opacity:.75}
+.opt.sel{background:var(--pink);color:#fff;border-color:var(--deep)}
+a.btn{display:block;margin:10px 0;text-decoration:none;border-radius:999px;padding:12px;background:#25d366;color:#fff;font-weight:700}
+a.alt{background:#fff;color:var(--deep);border:2px solid var(--deep)}
+.dots{margin-top:18px;color:#ffb3cd}.dots b{color:var(--deep)}
+</style>
+</head>
+<body>
+<div class="card">
+  <section class="step on" id="s1">
+    <span class="emoji">🥺</span>
+    <h1>Ciao Sara!</h1>
+    <p id="q1">Vuoi uscire con me?</p>
+    <div class="row">
+      <button id="yes">Sì 💖</button>
+      <button id="no">No</button>
+    </div>
+  </section>
+
+  <section class="step" id="s2">
+    <span class="emoji">📅</span>
+    <h1>Evvaiii! Quando?</h1>
+    <p>Scegli il giorno e l'ora, io mi libero. Giuro. 🫡</p>
+    <input type="date" id="date"><input type="time" id="time" value="20:00">
+    <p><button id="n2" disabled>Avanti →</button></p>
+  </section>
+
+  <section class="step" id="s3">
+    <span class="emoji">🍽️</span>
+    <h1>E dove si va?</h1>
+    <div id="places"></div>
+    <p><button id="n3" disabled>Conferma 💌</button></p>
+  </section>
+
+  <section class="step" id="s4">
+    <span class="emoji">🎉</span>
+    <h1>È un appuntamento!</h1>
+    <p id="recap"></p>
+    <a class="btn" id="toMe" target="_blank" rel="noopener">Avvisa Daniele 💬</a>
+    <a class="btn alt" id="toHer" target="_blank" rel="noopener">Mandalo anche a te (promemoria) 📲</a>
+  </section>
+
+  <div class="dots" id="dots"></div>
+</div>
+
+<script>
+// ---- config: edit here ----
+const ME = "__ME_NUMBER__", HER = "__HER_NUMBER__";
+const PLACES = [
+  {name:"SPAN", kind:"Pizza 🍕"},
+  {name:"Regina Sofia", kind:"Pizza 🍕"},
+  {name:"Yomi", kind:"Sushi 🍣"},
+  {name:"Donna Virginia", kind:"Spagnolo 🥘"},
+];
+const GUILT = ["Sei sicura? 🥹","Pensaci bene…","Guarda che ci rimango male 😢","Ti offro la cena!","Dai, ti prego 🙏","Ultima possibilità…","Il bottone No è rotto 🛠️"];
+// ---------------------------
+const $ = id => document.getElementById(id);
+let step = 1, place = null, noCount = 0, yesScale = 1;
+
+function go(n){
+  document.querySelector(".step.on").classList.remove("on");
+  $("s"+n).classList.add("on"); step = n;
+  $("dots").innerHTML = n<4 ? [1,2,3].map(i=>i==n?"<b>●</b>":"○").join(" ") : "";
+  burst();
+}
+function burst(){
+  for(let i=0;i<14;i++){
+    const h=document.createElement("div");h.className="heart";
+    h.textContent=["💖","💕","💗","❤️","🌸"][i%5];
+    h.style.left=Math.random()*100+"vw";h.style.fontSize=16+Math.random()*28+"px";
+    h.style.animationDuration=4+Math.random()*5+"s";
+    document.body.append(h);setTimeout(()=>h.remove(),9000);
+  }
+}
+burst(); setInterval(burst,6000);
+
+// Step 1: No dodges + guilt, Yes grows
+const no = $("no");
+function dodge(e){
+  e.preventDefault();
+  no.textContent = GUILT[Math.min(noCount++,GUILT.length-1)];
+  yesScale = Math.min(yesScale+.25,3); $("yes").style.transform = `scale(${yesScale})`;
+  no.style.position="fixed";
+  no.style.left = Math.random()*(innerWidth-no.offsetWidth-20)+10+"px";
+  no.style.top = Math.random()*(innerHeight-no.offsetHeight-20)+10+"px";
+}
+no.addEventListener("mouseover",dodge);
+no.addEventListener("touchstart",dodge,{passive:false});
+no.addEventListener("click",dodge);
+$("yes").onclick = ()=>{ no.style.display="none"; go(2); };
+
+// Step 2
+const d = $("date"), t = $("time");
+d.min = new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const ok2 = ()=>$("n2").disabled = !(d.value && t.value);
+d.oninput = t.oninput = ok2;
+$("n2").onclick = ()=>go(3);
+
+// Step 3
+PLACES.forEach(p=>{
+  const b=document.createElement("button");b.className="opt";
+  b.textContent=`${p.name} — ${p.kind}`;
+  b.onclick=()=>{place=p;document.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");$("n3").disabled=false;};
+  $("places").append(b);
+});
+$("n3").onclick = ()=>{
+  const when = new Date(d.value+"T"+t.value).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"});
+  const kind = place.kind.replace(/\s*\p{Extended_Pictographic}/gu,"");
+  const text = `Sara ha detto SI'! \nQuando: ${when}, ore ${t.value}\nDove: ${place.name} (${kind})\nNon vedo l'ora!`;
+  $("recap").innerHTML = `${when}, ore ${t.value}<br>${place.name} · ${place.kind}`;
+  $("toMe").href = `https://wa.me/${ME}?text=${encodeURIComponent(text)}`;
+  $("toHer").href = `https://wa.me/${HER}?text=${encodeURIComponent(text)}`;
+  go(4);
+};
+</script>
+</body>
+</html>
